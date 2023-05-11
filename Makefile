@@ -5,16 +5,17 @@
 # tcpAll target makes the TCP test code
 
 
-CC= gcc
+CC= g++
 CFLAGS= -g -Wall
 LIBS = 
 
-OBJS = networks.o gethostbyname.o pollLib.o safeUtil.o
+OBJS = networks.o gethostbyname.o pollLib.o safeUtil.o commControl.o
 
 #uncomment next two lines if your using sendtoErr() library
 LIBS += libcpe464.2.21.a -lstdc++ -ldl
-#CFLAGS += -D__LIBCPE464_
+CFLAGS += -D__LIBCPE464_
 
+.PHONY: $(OBJS) rcopy server
 
 all: udpAll
 
@@ -32,6 +33,24 @@ myClient: myClient.c $(OBJS)
 
 myServer: myServer.c $(OBJS)
 	$(CC) $(CFLAGS) -o myServer myServer.c $(OBJS) $(LIBS)
+
+safeUtil.o:
+	$(CC) $(CFLAGS) -c safeUtil.c
+
+networks.o:
+	$(CC) $(CFLAGS) -c networks.c
+
+gethostbyname.o:
+	$(CC) $(CFLAGS) -c gethostbyname.c
+
+pollLib.o:
+	$(CC) $(CFLAGS) -c pollLib.c
+
+commControl.o: checksum.o
+	$(CC) $(CFLAGS) -c commControl.cpp
+
+checksum.o:
+	$(CC) $(CFLAGS) -c libcpe464/checksum.c
 
 .c.o:
 	gcc -c $(CFLAGS) $< -o $@ $(LIBS)

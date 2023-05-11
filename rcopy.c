@@ -2,7 +2,7 @@
 // By Hugh Smith	4/1/2017		
 
 #include "includes.h"
-
+#include "commControl.hpp"
 #include "gethostbyname.h"
 #include "networks.h"
 #include "safeUtil.h"
@@ -38,15 +38,20 @@ void talkToServer(int socketNum, struct sockaddr_in6 * server)
 	char * ipString = NULL;
 	int dataLen = 0; 
 	char buffer[MAXBUF+1];
+	char payload[MAXBUF+1];
+	int seq = 0;
 	
 	buffer[0] = '\0';
 	while (buffer[0] != '.')
 	{
-		dataLen = readFromStdin(buffer);
+		dataLen = readFromStdin(payload);
 
-		printf("Sending: %s with len: %d\n", buffer,dataLen);
+		printf("Sending: %s with len: %d\n", payload,dataLen);
 	
+		dataLen = createPDU((uint8_t*)buffer, seq++, 5, (uint8_t*)payload, dataLen);
+		printPDU((uint8_t*)buffer, dataLen);
 		safeSendto(socketNum, buffer, dataLen, 0, (struct sockaddr *) server, serverAddrLen);
+		
 		
 		safeRecvfrom(socketNum, buffer, MAXBUF, 0, (struct sockaddr *) server, &serverAddrLen);
 		
