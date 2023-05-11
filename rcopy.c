@@ -1,19 +1,7 @@
 // Client side - UDP Code				    
 // By Hugh Smith	4/1/2017		
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/uio.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <strings.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
+#include "includes.h"
 
 #include "gethostbyname.h"
 #include "networks.h"
@@ -23,7 +11,7 @@
 
 void talkToServer(int socketNum, struct sockaddr_in6 * server);
 int readFromStdin(char * buffer);
-int checkArgs(int argc, char * argv[]);
+void checkArgs(int argc, char * argv[], int* portNumber, double* errorRate);
 
 
 int main (int argc, char *argv[])
@@ -31,8 +19,9 @@ int main (int argc, char *argv[])
 	int socketNum = 0;				
 	struct sockaddr_in6 server;		// Supports 4 and 6 but requires IPv6 struct
 	int portNumber = 0;
+	double errorRate = 0;
 	
-	portNumber = checkArgs(argc, argv);
+	checkArgs(argc, argv, &portNumber, &errorRate);
 	
 	socketNum = setupUdpClientToServer(&server, argv[1], portNumber);
 	
@@ -93,21 +82,21 @@ int readFromStdin(char * buffer)
 	return inputLen;
 }
 
-int checkArgs(int argc, char * argv[])
+void checkArgs(int argc, char * argv[], int* portNumber, double* errorRate)
 {
-
-        int portNumber = 0;
 	
         /* check command line arguments  */
-	if (argc != 3)
+	if (argc != 4)
 	{
-		printf("usage: %s host-name port-number \n", argv[0]);
+		printf("usage: %s error-rate host-name port-number \n", argv[0]);
 		exit(1);
 	}
 	
-	portNumber = atoi(argv[2]);
+	//TODO error checkings
+	*portNumber = atoi(argv[3]);
+	*errorRate = atof(argv[1]);
 		
-	return portNumber;
+	return;
 }
 
 
