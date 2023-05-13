@@ -61,6 +61,13 @@ cleano:
 clean:
 	rm -f myServer myClient rcopy server *.o
 
+unixupdate:
+	git reset --hard
+	git pull
+	rm libcpe464.2.21.a
+	make -f build464Lib.mk
+	make all
+
 
 
 
