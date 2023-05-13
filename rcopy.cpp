@@ -54,12 +54,14 @@ void talkToServer(int socketNum, struct sockaddr_in6 * server)
 		safeSendto(socketNum, buffer, dataLen, 0, (struct sockaddr *) server, serverAddrLen);
 		
 		
-		safeRecvfrom(socketNum, buffer, MAXBUF, 0, (struct sockaddr *) server, &serverAddrLen);
+		dataLen = safeRecvfrom(socketNum, buffer, MAXBUF, 0, (struct sockaddr *) server, &serverAddrLen);
 		
+		
+
 		// print out bytes received
 		ipString = ipAddressToString(server);
 		printf("Server with ip: %s and port %d said it received %s\n", ipString, ntohs(server->sin6_port), buffer);
-	      
+	    printPDU((uint8_t*)buffer, dataLen);
 	}
 }
 
