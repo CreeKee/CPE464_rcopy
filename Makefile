@@ -23,7 +23,7 @@ udpAll: rcopy server
 tcpAll: myClient myServer
 
 rcopy: rcopy.cpp $(OBJS) 
-	$(PP) $(CFLAGS) -o rcopy rcopy.cpp $(OBJS) $(LIBS)
+	$(CC) $(CFLAGS) -o rcopy rcopy.cpp $(OBJS) $(LIBS)
 
 server: server.cpp $(OBJS) 
 	$(CC) $(CFLAGS) -o server server.cpp  $(OBJS) $(LIBS)
