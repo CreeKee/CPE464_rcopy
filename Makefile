@@ -47,7 +47,7 @@ pollLib.o:
 	$(CC) $(CFLAGS) -c pollLib.c
 
 commControl.o: checksum.o
-	$(PP) $(CFLAGS) -c commControl.cpp
+	$(CC) $(CFLAGS) -c commControl.cpp
 
 checksum.o:
 	$(CC) $(CFLAGS) -c libcpe464/checksum.c
