@@ -53,11 +53,9 @@ void processClient(int socketNum)
 	
 		printf("Received message from client with ");
 		printIPInfo(&client);
-		printf(" Len: %d \'%s\'\n", dataLen, buffer);
 		printPDU((uint8_t*)buffer, dataLen);
 
 		// just for fun send back to client number of bytes received
-		//sprintf(buffer, "bytes: %d", dataLen);
 		safeSendto(socketNum, buffer, dataLen, 0, (struct sockaddr *) & client, clientAddrLen);
 
 	}

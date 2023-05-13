@@ -50,15 +50,15 @@ void talkToServer(int socketNum, struct sockaddr_in6 * server)
 		printf("Sending: %s with len: %d\n", payload,dataLen);
 	
 		dataLen = createPDU((uint8_t*)buffer, seq++, 0, (uint8_t*)payload, dataLen);
+
+		//print pdu for verification
 		printPDU((uint8_t*)buffer, dataLen);
 		safeSendto(socketNum, buffer, dataLen, 0, (struct sockaddr *) server, serverAddrLen);
 		
 		
 		dataLen = safeRecvfrom(socketNum, buffer, MAXBUF, 0, (struct sockaddr *) server, &serverAddrLen);
-		
-		
 
-		// print out bytes received
+		// print out pdu received
 		ipString = ipAddressToString(server);
 		printf("Server with ip: %s and port %d said it received %s\n", ipString, ntohs(server->sin6_port), buffer);
 	    printPDU((uint8_t*)buffer, dataLen);
