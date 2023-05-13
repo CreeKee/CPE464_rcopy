@@ -57,7 +57,7 @@ void processClient(int socketNum)
 		printPDU((uint8_t*)buffer, dataLen);
 
 		// just for fun send back to client number of bytes received
-		sprintf(buffer, "bytes: %d", dataLen);
+		//sprintf(buffer, "bytes: %d", dataLen);
 		safeSendto(socketNum, buffer, dataLen, 0, (struct sockaddr *) & client, clientAddrLen);
 
 	}
