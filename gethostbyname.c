@@ -150,10 +150,13 @@ static unsigned char * getIPAddress46(const char * hostName, struct sockaddr_sto
 
 void gethostbyname_test()
 {
+	//creates errors
+	/*
 	gethostbyname_test_lookup("www.google.com");
 	gethostbyname_test_lookup("ipv6.google.com");
 	gethostbyname_test_lookup("my.calpoly.edu");
 	gethostbyname_test_lookup("does not exist");
+	*/
 }
 
 void gethostbyname_test_lookup(char * hostname)

@@ -22,11 +22,11 @@ all: udpAll
 udpAll: rcopy server
 tcpAll: myClient myServer
 
-rcopy: rcopy.c $(OBJS) 
-	$(CC) $(CFLAGS) -o rcopy rcopy.c $(OBJS) $(LIBS)
+rcopy: rcopy.cpp $(OBJS) 
+	$(PP) $(CFLAGS) -o rcopy rcopy.cpp $(OBJS) $(LIBS)
 
-server: server.c $(OBJS) 
-	$(CC) $(CFLAGS) -o server server.c  $(OBJS) $(LIBS)
+server: server.cpp $(OBJS) 
+	$(CC) $(CFLAGS) -o server server.cpp  $(OBJS) $(LIBS)
 
 myClient: myClient.c $(OBJS)
 	$(CC) $(CFLAGS) -o myClient myClient.c  $(OBJS) $(LIBS)
@@ -47,7 +47,7 @@ pollLib.o:
 	$(CC) $(CFLAGS) -c pollLib.c
 
 commControl.o: checksum.o
-	$(CC) $(CFLAGS) -c commControl.cpp
+	$(PP) $(CFLAGS) -c commControl.cpp
 
 checksum.o:
 	$(CC) $(CFLAGS) -c libcpe464/checksum.c

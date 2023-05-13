@@ -10,9 +10,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "commControl.hpp"
 #include "gethostbyname.h"
 #include "networks.h"
 #include "safeUtil.h"
+#include "cpe464.h"
 
 #define MAXBUF 80
 
@@ -21,12 +23,13 @@ void checkArgs(int argc, char *argv[], int* portNumber, double* errorRate);
 
 int main ( int argc, char *argv[]  )
 { 
+	
 	int socketNum = 0;				
 	int portNumber = 0;
 	double errorRate = 0;
 
 	checkArgs(argc, argv, &portNumber, &errorRate);
-		
+	sendErr_init(errorRate, DROP_ON, FLIP_ON, DEBUG_ON, RSEED_OFF);
 	socketNum = udpServerSetup(portNumber);
 
 	processClient(socketNum);
@@ -51,6 +54,7 @@ void processClient(int socketNum)
 		printf("Received message from client with ");
 		printIPInfo(&client);
 		printf(" Len: %d \'%s\'\n", dataLen, buffer);
+		printPDU((uint8_t*)buffer, dataLen);
 
 		// just for fun send back to client number of bytes received
 		sprintf(buffer, "bytes: %d", dataLen);

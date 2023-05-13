@@ -22,7 +22,8 @@ int main (int argc, char *argv[])
 	double errorRate = 0;
 	
 	checkArgs(argc, argv, &portNumber, &errorRate);
-	
+	sendErr_init(errorRate, DROP_ON, FLIP_ON, DEBUG_ON, RSEED_OFF);
+
 	socketNum = setupUdpClientToServer(&server, argv[1], portNumber);
 	
 	talkToServer(socketNum, &server);
