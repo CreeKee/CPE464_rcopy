@@ -51,7 +51,7 @@ void talkToServer(int socketNum, struct sockaddr_in6 * server)
 	
 		dataLen = createPDU((uint8_t*)buffer, seq++, 0, (uint8_t*)payload, dataLen);
 		printPDU((uint8_t*)buffer, dataLen);
-		safeSendto(socketNum, buffer, dataLen, 0, (struct sockaddr *) server, serverAddrLen);
+		safeSendto(socketNum, buffer, dataLen+1, 0, (struct sockaddr *) server, serverAddrLen);
 		
 		
 		dataLen = safeRecvfrom(socketNum, buffer, MAXBUF, 0, (struct sockaddr *) server, &serverAddrLen);
