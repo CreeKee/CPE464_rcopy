@@ -28,7 +28,7 @@ void printPDU(uint8_t* aPDU, int pduLength){
         seqNum = ntohl(((uint32_t*) aPDU)[0]);
         flag = aPDU[6];
 
-        printf("\nsequence num: %d\nflag%d\npayload length: %d\npayload: %s\n", seqNum, flag, pduLength, aPDU+7);
+        printf("\nsequence num: %d\nflag: %d\npayload length: %d\npayload: %s\n", seqNum, flag, pduLength, aPDU+7);
     }
     else{
 

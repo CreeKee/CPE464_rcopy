@@ -49,7 +49,7 @@ void talkToServer(int socketNum, struct sockaddr_in6 * server)
 
 		printf("Sending: %s with len: %d\n", payload,dataLen);
 	
-		dataLen = createPDU((uint8_t*)buffer, seq++, 5, (uint8_t*)payload, dataLen);
+		dataLen = createPDU((uint8_t*)buffer, seq++, 0, (uint8_t*)payload, dataLen);
 		printPDU((uint8_t*)buffer, dataLen);
 		safeSendto(socketNum, buffer, dataLen, 0, (struct sockaddr *) server, serverAddrLen);
 		
