@@ -34,3 +34,6 @@ void printPDU(uint8_t* aPDU, int pduLength){
         printf("ERROR invalid checksum: %d\n", check);
     }
 }
+
+
+

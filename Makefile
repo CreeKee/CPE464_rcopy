@@ -9,7 +9,7 @@ CC= g++
 CFLAGS= -g -Wall
 LIBS = 
 
-OBJS = networks.o gethostbyname.o pollLib.o safeUtil.o commControl.o
+OBJS = networks.o gethostbyname.o pollLib.o safeUtil.o commControl.o window.o Pack.o
 
 #uncomment next two lines if your using sendtoErr() library
 LIBS += libcpe464.2.21.a -lstdc++ -ldl
@@ -39,6 +39,12 @@ safeUtil.o:
 
 networks.o:
 	$(CC) $(CFLAGS) -c networks.c
+
+window.o:
+	$(CC) $(CFLAGS) -c window.cpp
+
+Pack.o:
+	$(CC) $(CFLAGS) -c Pack.cpp
 
 gethostbyname.o:
 	$(CC) $(CFLAGS) -c gethostbyname.c

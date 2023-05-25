@@ -6,6 +6,8 @@
 #include "gethostbyname.h"
 #include "networks.h"
 #include "safeUtil.h"
+#include "pollLib.h"
+#include "window.hpp"
 
 #define MAXBUF 80
 
@@ -16,18 +18,50 @@ void checkArgs(int argc, char * argv[], int* portNumber, double* errorRate);
 
 int main (int argc, char *argv[])
  {
+	uint32_t polltime = 0;
+	uint32_t pollcheck = 0;
 	int socketNum = 0;				
 	struct sockaddr_in6 server;		// Supports 4 and 6 but requires IPv6 struct
 	int portNumber = 0;
 	double errorRate = 0;
+
+	Window window;
 	
 	checkArgs(argc, argv, &portNumber, &errorRate);
 	sendErr_init(errorRate, DROP_ON, FLIP_ON, DEBUG_ON, RSEED_OFF);
 
 	socketNum = setupUdpClientToServer(&server, argv[2], portNumber);
 	
-	talkToServer(socketNum, &server);
+	//talkToServer(socketNum, &server);
 	
+	//poll(0)
+	//read into pack
+	//add pack to window
+	//send pack
+
+	while(/*file not empty&&*/pollcheck < 11){
+
+		/*start blasting*/
+		while(window.isopen()){
+			//read into pack
+			//add pack to window
+			window[window.getCurr()] = outpack;
+
+			//send pack
+		}
+		if(pollCall(polltime)){
+			//handle RR or SREJ
+			polltime = 0;
+			pollcheck = 0;
+		}
+		else{
+			
+		}
+	}
+
+
+
+
 	close(socketNum);
 
 	return 0;
@@ -55,13 +89,13 @@ void talkToServer(int socketNum, struct sockaddr_in6 * server)
 		printPDU((uint8_t*)buffer, dataLen);
 		safeSendto(socketNum, buffer, dataLen, 0, (struct sockaddr *) server, serverAddrLen);
 		
-		
+		/*
 		dataLen = safeRecvfrom(socketNum, buffer, MAXBUF, 0, (struct sockaddr *) server, &serverAddrLen);
 
 		// print out pdu received
 		ipString = ipAddressToString(server);
 		printf("Server with ip: %s and port %d said it received %s\n", ipString, ntohs(server->sin6_port), buffer);
-	    printPDU((uint8_t*)buffer, dataLen);
+	    printPDU((uint8_t*)buffer, dataLen);*/
 	}
 }
 

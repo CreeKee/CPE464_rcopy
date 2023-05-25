@@ -11,3 +11,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+
+#define MAXBUF 1400
+#define HEADERSIZE 8
