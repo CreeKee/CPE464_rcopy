@@ -12,5 +12,21 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-#define MAXBUF 1400
-#define HEADERSIZE 8
+#define MAXBUF 1400+HEADERSIZE
+#define HEADERSIZE 7
+
+#define SREJFLAG 6
+#define RRFLAG 5
+#define DATAFLAG 4
+
+#ifndef BUND
+#define BUND
+struct CommBund{
+
+    int socket;
+    struct sockaddr_in6 other;
+    int otherAddrLen;
+
+};
+
+#endif

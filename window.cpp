@@ -13,12 +13,11 @@ Window::Window(uint32_t size){
 
 void Window::upshift(uint32_t val){
 
-    for(uint32_t cull = lower; cull<lower+val; cull++){
-        buffer[cull%windowSize].empty = true;
+    for(uint32_t cull = 0; cull<val; cull++){
+        buffer[(cull+lower)%windowSize].empty = true;
+        if(lower == current) current = (lower+1)%windowSize;
+        lower = (lower+1)%windowSize; 
     }
-
-    if(lower+val > current) current = val%windowSize;
-    lower = (lower+val)%windowSize;
     upper = (lower+windowSize-1)%windowSize;
 
 }

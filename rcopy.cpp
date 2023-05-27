@@ -9,8 +9,6 @@
 #include "pollLib.h"
 #include "window.hpp"
 
-#define MAXBUF 80
-
 void talkToServer(int socketNum, struct sockaddr_in6 * server);
 int readFromStdin(char * buffer);
 void checkArgs(int argc, char * argv[], int* portNumber, double* errorRate);
@@ -18,51 +16,104 @@ void checkArgs(int argc, char * argv[], int* portNumber, double* errorRate);
 
 int main (int argc, char *argv[])
  {
+	int len = 0;
+	uint8_t buffer[MAXBUF] = {0};
 	uint32_t polltime = 0;
 	uint32_t pollcheck = 0;
-	int socketNum = 0;				
-	struct sockaddr_in6 server;		// Supports 4 and 6 but requires IPv6 struct
+	uint32_t curseq = 0;
 	int portNumber = 0;
 	double errorRate = 0;
 
-	Window window;
+	Pack badpack;
+	badpack.flag = 5;
+
+	Pack incpack;
+	Pack outpack;
+
+	CommBund server;
+	server.otherAddrLen = sizeof(struct sockaddr_in6);;
+
+	Window window(10);
 	
 	checkArgs(argc, argv, &portNumber, &errorRate);
 	sendErr_init(errorRate, DROP_ON, FLIP_ON, DEBUG_ON, RSEED_OFF);
 
-	socketNum = setupUdpClientToServer(&server, argv[2], portNumber);
+	server.socket = setupUdpClientToServer(&(server.other), argv[2], portNumber);
 	
 	//talkToServer(socketNum, &server);
 	
+	addToPollSet(server.socket);
+
 	//poll(0)
 	//read into pack
 	//add pack to window
 	//send pack
 
+	int x = 0;
 	while(/*file not empty&&*/pollcheck < 11){
-
+		printf("starting rcopying %d %d %d\n",window.getLow(), window.getCurr(), window.getUp());
 		/*start blasting*/
 		while(window.isopen()){
+			printf("read from file\n");
+
+			len = readFromStdin((char*)buffer);
+
+			outpack = Pack(buffer, len, curseq++, DATAFLAG);
 			//read into pack
 			//add pack to window
-			window[window.getCurr()] = outpack;
+			window[window.getCurr()-window.getLow()] = outpack;
+			printf("curr %d, curseq %d should be %d\n",window.getCurr(),window[window.getCurr()].seq,outpack.seq);
+			window.incCurr();
+
+			if(len == 1){
+				printf("sending bad pack\n");
+				uint8_t PDU[MAXBUF+1] = {0};
+
+				((uint32_t*)PDU)[0] = htonl(outpack.seq);
+				PDU[6] = outpack.flag;
+
+				memcpy(PDU+7, "was a bad packet", 17);
+
+				((uint16_t*) PDU)[2] = 0;
+				safeSendto(server.socket, PDU, 17+HEADERSIZE, 0, (struct sockaddr *) &server.other, server.otherAddrLen);
+			}
+			else{
 
 			//send pack
+			sendPack(&server, outpack);
+			}
 		}
 		if(pollCall(polltime)){
 			//handle RR or SREJ
-			polltime = 0;
+			incpack = receivePack(&server);
+
+			if(!incpack.empty){
+				switch(incpack.flag){
+					case RRFLAG:
+						x = incpack.seq;
+						printf("got RR %d, upshifting %d, from %d at %d\n", x, x-window[0].seq,window[0].seq,window.getLow());
+						window.upshift(incpack.seq-window[0].seq);
+						break;
+
+					case SREJFLAG:
+						printf("got SREJ %d\n", incpack.seq);
+						sendPack(&server, window[incpack.seq-window[0].seq]);
+						break;
+
+					default:
+						break;
+				}
+
+			}
 			pollcheck = 0;
 		}
 		else{
-			
+			pollcheck++;
+			sendPack(&server, window[0]);
 		}
 	}
 
-
-
-
-	close(socketNum);
+	close(server.socket);
 
 	return 0;
 }

@@ -18,87 +18,115 @@
 #include "safeUtil.h"
 #include "cpe464.h"
 
-#define MAXBUF 80
-
+int handshake();
+void processData(uint32_t portNumber, int fd, CommBund client);
 void processClient(int socketNum);
 void checkArgs(int argc, char *argv[], int* portNumber, double* errorRate);
-inline Pack receivePack(int socketNum);
+void controlpack(CommBund* client, uint32_t num, uint8_t flag);
 
 int main ( int argc, char *argv[]  )
 { 
-	Pack incpack;
-	int socketNum = 0;				
 	int portNumber = 0;
-	int curseq = 0;
 	double errorRate = 0;
-	uint32_t RR = 0;
-
-	//TODO
-	Window window(10);
+	int fd;
 
 	checkArgs(argc, argv, &portNumber, &errorRate);
 	sendErr_init(errorRate, DROP_ON, FLIP_ON, DEBUG_ON, RSEED_OFF);
-	socketNum = udpServerSetup(portNumber);
+	
 
 	//processClient(socketNum);
 
+	CommBund client;
+	client.otherAddrLen = sizeof(client.other);
 
-	addToPollSet(socketNum);
+	client.socket = udpServerSetup(portNumber);
 
-	//TODO magic num
-	while(pollCall(-1)){
+	addToPollSet(client.socket);
+
+	//fork??
+	fd = handshake();
+    if(fd != -1){
+		processData(portNumber, fd, client);
+		close(fd);
+	}
+	printf("\n---END---\n");
+	close(client.socket);
+	
+	return 0;
+}
+
+int handshake(){
+	return open("rcopytestout.txt", O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR,S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+}
+
+void processData(uint32_t portNumber, int fd, CommBund client){
+
+	int curseq = 0;
+	uint32_t RR = 0;
+	uint32_t untracked = 0;
+	int32_t check;
+
+	//TODO window sizing
+	Window window(10);
+	Pack incpack;
+
+		//TODO magic num
+	while(pollCall(10*1000)>0){
 		
 		printf("awoke from poll\n");
 
 		//receive packet
-		incpack = receivePack(socketNum);
+		incpack = receivePack(&client);
 
 		if(!incpack.empty && incpack.seq >= curseq){
 
 			printf("pack validated against %d\n", curseq);
 
 			window[(incpack.seq-window.getLow())%window.getSize()] = incpack;
+			untracked++;
 
 			printf("pack inserted in %d, low is %d\n", (incpack.seq-window.getLow())%window.getSize(),window.getLow());
 
-			for(int i = 0, RR = 0; i<window.getSize() && !window[i].empty; i++){
+			RR = 0;
+			for(int i = 0; i<window.getSize() && !window[0].empty; i++){
 				//write window[i] to file
-				printf("time to write seq: %d, %s\n", window[i].seq, window[i].data);
-
-				RR = i+1;
-				curseq = window[i].seq;
+				printf("time to write seq: %d, %s with length %d\n", window[0].seq, window[0].data, window[0].datalen);
+				if((check = write(fd, window[0].data, window[0].datalen-1))<0){
+					perror("write failed");
+					exit(-1);
+				}
+				printf("wrote %d bytes\n", check);
+				
+				curseq = window[0].seq;
+				RR = curseq+1;
 				window.upshift(1);
-
+				
+				untracked--;
 			}
 			if(RR != 0){
-				printf("RR(%d)\n",RR);
+				printf("ready to RR %d\n",curseq+1);
+				controlpack(&client, curseq+1, RRFLAG);
 			}
 
-			while(window.isopen()&&window[window.getCurr()].seq != incpack.seq){
-				if(window[window.getCurr()].empty){
+			while(window.isopen() && untracked > 0){
+				if(window[window.getCurr()-window.getLow()].empty){
 					//SREJ curr
-					printf("SREJ %d\n",curseq+window.getCurr());
+					printf("SREJ %d from index %d holding data %s\n",curseq+window.getCurr()-1, window.getCurr(),window[window.getCurr()].data);
+					controlpack(&client, curseq+window.getCurr()-1, SREJFLAG);
+				}
+				else{
+					untracked--;
 				}
 				window.incCurr();
+				printf("\n");
 			}
 			printf("\n");
 		}
+		else{
+			printf("invalid packet\n");
+		}
 	}
 	//timeout
-
-	close(socketNum);
-	
-	return 0;
-}
-
-inline Pack receivePack(int socketNum){
-	 
-	uint8_t buffer[MAXBUF + 1] = {0};	  
-	struct sockaddr_in6 client;		
-	int clientAddrLen = sizeof(client);	
-	int dataLen = safeRecvfrom(socketNum, buffer, MAXBUF, 0, (struct sockaddr *) &client, &clientAddrLen);
-
-	return Pack(buffer, dataLen);
 }
 
 void processClient(int socketNum)
@@ -140,6 +168,17 @@ void checkArgs(int argc, char *argv[], int* portNumber, double* errorRate)
 	*errorRate = atof(argv[1]);
 	
 	return;
+}
+
+void controlpack(CommBund* client, uint32_t num, uint8_t flag){
+
+
+	
+    uint32_t srejPDU[1] = {htonl(num)};
+	printf("NUM IS %d --- %d\n",num,srejPDU[0]);
+	Pack pack((uint8_t*)srejPDU, 4, num, flag);
+
+	sendPack(client, pack);
 }
 
 

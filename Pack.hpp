@@ -21,10 +21,11 @@ class Pack{
 
         Pack();
         Pack(uint8_t* buff, uint32_t bufflen);
+        Pack(uint8_t* buff, uint32_t bufflen, uint32_t inseq, uint8_t inflag);
 
 
 
-        //Pack& operator=(const Pack& p);
+        Pack& operator=(const Pack& p);
 
 };
 

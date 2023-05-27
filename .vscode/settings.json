@@ -2,6 +2,10 @@
     "files.associations": {
         "uio.h": "c",
         "fcntl.h": "c",
-        "cpe464.h": "c"
+        "cpe464.h": "c",
+        "array": "cpp",
+        "vector": "cpp",
+        "string": "cpp",
+        "string_view": "cpp"
     }
 }

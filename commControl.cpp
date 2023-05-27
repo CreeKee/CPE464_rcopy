@@ -35,5 +35,22 @@ void printPDU(uint8_t* aPDU, int pduLength){
     }
 }
 
+void sendPack(CommBund *other, Pack pack){
 
+    uint8_t PDU[MAXBUF+1] = {0};
 
+    ((uint32_t*)PDU)[0] = htonl(pack.seq);
+    PDU[6] = pack.flag;
+
+    memcpy(PDU+7, pack.data, pack.datalen);
+
+    ((uint16_t*) PDU)[2] = in_cksum((unsigned short*)PDU, pack.datalen+HEADERSIZE);
+	safeSendto(other->socket, PDU, pack.datalen+HEADERSIZE, 0, (struct sockaddr *) &other->other, other->otherAddrLen);
+}
+
+Pack receivePack(CommBund *other){	
+    uint8_t buffer[MAXBUF + 1] = {0};	  
+	int dataLen = safeRecvfrom(other->socket, buffer, MAXBUF, 0, (sockaddr*)&(other->other), &(other->otherAddrLen));
+
+	return Pack(buffer, dataLen);
+}

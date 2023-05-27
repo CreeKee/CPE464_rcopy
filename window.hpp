@@ -20,9 +20,10 @@ class Window{
         uint32_t getSize(){return windowSize;}
         uint32_t getCurr(){return current;}
         uint32_t getLow(){return lower;}
+        uint32_t getUp(){return upper;}
         void incCurr(){current = (current+1)%windowSize;}
 
-        bool isopen(){return current == upper;}
+        bool isopen(){return current != upper;}
 
         void upshift(uint32_t val);
 
