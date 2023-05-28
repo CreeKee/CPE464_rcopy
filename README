@@ -1,0 +1,10 @@
+Seth Kiefer (skiefer) 3pm lab section
+
+there is an output after finishing in the form of: 
+
+======== SeqNo Report ========
+  Msgs (Total)       :   356
+  Msgs (Unique SeqNo):   303
+==============================
+
+This is done automatically by the provided error utilities, and cannot be turned off
