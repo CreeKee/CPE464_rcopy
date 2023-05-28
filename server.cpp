@@ -1,16 +1,6 @@
 /* Server side - UDP Code				    */
 /* By Hugh Smith	4/1/2017	*/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <signal.h>
-
 #include "window.hpp"
 #include "pollLib.h"
 #include "commControl.hpp"
@@ -193,7 +183,7 @@ void processData(int fd, CommBund client, uint32_t windowSize){
 		}
 
 		//old data was resent, an RR must have failed
-		else if(!incpack.empty && incpack.seq <= curseq){
+		else if(!incpack.empty && (signed)incpack.seq <= curseq){
 			//resend most recent RR
 			controlpack(&client, curseq+1, RRFLAG);
 		}
