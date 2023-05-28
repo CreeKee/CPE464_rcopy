@@ -34,7 +34,6 @@ Pack& Pack::operator=(const Pack& p){
 
     datalen = p.datalen;
     seq = p.seq;
-    check = p.check;
     flag = p.flag;
     empty = p.empty;
     memcpy(data, p.data, datalen);

@@ -16,6 +16,7 @@ class Window{
 
     public:
         Window(uint32_t size);
+        ~Window(){free(buffer);}
 
         uint32_t getSize(){return windowSize;}
         uint32_t getCurr(){return current;}

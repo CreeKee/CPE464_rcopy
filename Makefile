@@ -5,7 +5,7 @@
 # tcpAll target makes the TCP test code
 
 
-CC= g++
+CC= g++ -std=c++11
 CFLAGS= -g -Wall
 LIBS = 
 
