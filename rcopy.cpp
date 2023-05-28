@@ -19,28 +19,34 @@ void checkArgs(int argc, char * argv[]);
 int main (int argc, char *argv[])
  {
 	int fd;
-	Pack badpack;
-	badpack.flag = 5;
-
 	CommBund server;
 	server.otherAddrLen = sizeof(struct sockaddr_in6);;
 	
 	checkArgs(argc, argv);
-
-	sendErr_init(atof(argv[ERIND]), DROP_ON, FLIP_ON, DEBUG_ON, RSEED_OFF);
+	sendErr_init(atof(argv[ERIND]), DROP_ON, FLIP_ON, DEBUG_OFF, RSEED_ON);
 
 	server.socket = setupUdpClientToServer(&(server.other), argv[HNIND], atoi(argv[PNIND]));
 		
 	addToPollSet(server.socket);
 
+	//open file
 	if((fd = open(argv[FFIND], O_RDONLY)) >0){
+
+		//connect to server
 		if(handshake(argv[TFIND],atof(argv[BSIND]),atof(argv[WSIND]),&server) > 0){
+
+			//send data
 			sendData(server, fd, atof(argv[BSIND]), atof(argv[WSIND]));
+
+			//close connection
 			close(server.socket);
 		}
+
+		//close file
+		close(fd);
 	}
 	else{
-		printf("Error: file %s not found", argv[FFIND]);
+		printf("Error: file %s not found\n", argv[FFIND]);
 		exit(-1);
 	}
 
@@ -79,7 +85,11 @@ bool handshake(char* filename, uint32_t buffersize, uint32_t windowsize, CommBun
 			inp = receivePack(server);
 
 			//check for valid packet
-			if(!inp.empty) done = true;
+			if(!inp.empty){ 
+				done = true;
+				removeFromPollSet(reset.socket);
+				addToPollSet(server->socket);
+			}
 
 			//reset communication socket in case of corrupted packet (create new child and let previous child die)
 			else *server = reset;
@@ -111,6 +121,8 @@ void sendData(CommBund server, int fd, uint32_t buffersize, uint32_t windowsize)
 	Pack incpack;
 	Pack outpack;
 
+	int32_t pollres = 0;
+
 	uint8_t buffer[MAXBUF] = {0};
 
 	uint32_t pollcheck = 0;
@@ -141,7 +153,7 @@ void sendData(CommBund server, int fd, uint32_t buffersize, uint32_t windowsize)
 
 				//add current packet to the window
 				window[window.getCurr()-window.getLow()] = outpack;
-				window.incCurr();
+				if(window.isopen()) window.incCurr();
 
 				//send current packet
 				sendPack(&server, outpack);
@@ -149,7 +161,7 @@ void sendData(CommBund server, int fd, uint32_t buffersize, uint32_t windowsize)
 		}
 
 		//check with server for any responses
-		if(pollCall((!window.isopen())*SHORTWAIT) > 0){
+		while((pollres = pollCall((!window.isopen())*SHORTWAIT)) > 0){
 
 			//receive packet from server
 			incpack = receivePack(&server);
@@ -182,12 +194,12 @@ void sendData(CommBund server, int fd, uint32_t buffersize, uint32_t windowsize)
 		}
 
 		//server failed to respond, increase timeout counter and resend lowest packet
-		else if(!window.isopen()||len==0){
+		if(pollres < 0 && (!window.isopen()||len == 0)){
 			pollcheck++;
 			sendPack(&server, window[0]);
 		}
 	}
-
+	sendPack(&server, Pack(buffer, 0, curseq, DATAFLAG));
 }
 
 int readFromStdin(char * buffer)

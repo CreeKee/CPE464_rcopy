@@ -30,7 +30,7 @@ int main ( int argc, char *argv[]  )
 	CommBund client;
 
 	checkArgs(argc, argv, &portNumber, &errorRate);
-	sendErr_init(errorRate, DROP_ON, FLIP_ON, DEBUG_ON, RSEED_OFF);
+	sendErr_init(errorRate, DROP_ON, FLIP_ON, DEBUG_OFF, RSEED_ON);
 
 	//set up server
 	client.otherAddrLen = sizeof(client.other);
@@ -47,6 +47,7 @@ int main ( int argc, char *argv[]  )
 
 			//fork a child
 			if((pid = fork()) == 0){
+				sendErr_init(errorRate, DROP_ON, FLIP_ON, DEBUG_OFF, RSEED_ON);
 
 				//set up communications with client
 				if((fd = handshake(newcomer, portNumber, &client, &buffersize, &windowsize)) != -1){
@@ -87,7 +88,7 @@ int handshake(Pack newcomer, int portNumber, CommBund* client, uint32_t* buffers
 		memcpy(filename, newcomer.data+2*sizeof(uint32_t), newcomer.datalen-2*sizeof(uint32_t));
 
 		if((retval = open(filename, O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) < 0){
-			printf("Error: file %s not found", filename);
+			printf("Error on open of output file on server: %s\n", filename);
 			exit(-1);
 		} 
 	}
@@ -120,12 +121,13 @@ void processData(int fd, CommBund client, uint32_t windowSize){
 
 	Window window(windowSize);
 	Pack incpack;
+	incpack.datalen = 1;
 
 	//add client to poll set
 	addToPollSet(client.socket);
 
 	//wait for data
-	while(pollCall(LONGWAIT)>0){
+	while(!(!incpack.empty && incpack.datalen==0)&&pollCall(LONGWAIT)>0){
 	
 		//receive packet
 		incpack = receivePack(&client);
@@ -154,8 +156,6 @@ void processData(int fd, CommBund client, uint32_t windowSize){
 				if(flush == 0) untracked--;
 
 				window.upshift(1);
-				
-				
 				
 			}
 
@@ -188,6 +188,7 @@ void processData(int fd, CommBund client, uint32_t windowSize){
 			controlpack(&client, curseq+1, RRFLAG);
 		}
 	}
+	
 }
 
 void checkArgs(int argc, char *argv[], int* portNumber, double* errorRate)

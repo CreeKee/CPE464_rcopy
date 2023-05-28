@@ -20,9 +20,9 @@
 #define MAXBUF BUFFMAX+HEADERSIZE
 #define BUFFMAX 1400
 #define HEADERSIZE 7
-#define MAXFILENAME 1400-9
+#define MAXFILENAME 100
 
-#define WINDMIN 2
+#define WINDMIN 1
 #define BUFFMIN 1
 
 #define CHECKFLAG 8
@@ -31,7 +31,7 @@
 #define RRFLAG 5
 #define DATAFLAG 3
 
-#define SHORTWAIT 100
+#define SHORTWAIT 1000
 #define LONGWAIT 10000
 #define TIMEOUTCNT 10
 

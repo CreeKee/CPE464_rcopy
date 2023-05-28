@@ -5,14 +5,16 @@ Pack::Pack(){
     empty = true;
     seq = -1;
     flag = 0;
-
 }
 
 Pack::Pack(uint8_t* buff, uint32_t bufflen){
+
+    //verify data
     empty = (in_cksum((unsigned short*)buff, bufflen) != 0);
+
+    //read in data
     datalen = bufflen-HEADERSIZE;
     if(!empty){
-
         seq = ntohl(((uint32_t*)buff)[0]);
         flag = buff[6];
         memcpy(data,buff+HEADERSIZE, bufflen-HEADERSIZE);
