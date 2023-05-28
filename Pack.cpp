@@ -23,7 +23,7 @@ Pack::Pack(uint8_t* buff, uint32_t bufflen){
 }
 
 Pack::Pack(uint8_t* buff, uint32_t bufflen, uint32_t inseq, uint8_t inflag){
-    empty = 0;
+    empty = false;
     flag = inflag;
     seq = inseq;
     datalen = bufflen;
